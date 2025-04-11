@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Regla general: denegar acceso por defecto
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // Reglas específicas para la colección 'turns'
+    match /turns/{turnId} {
+      // Permitir lectura si el usuario está autenticado y es el propietario del turno
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      
+      // Permitir creación si el usuario está autenticado y establece su ID como propietario
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      
+      // Permitir actualización si el usuario está autenticado, es el propietario y no cambia el propietario
+      allow update: if request.auth != null && 
+                     request.auth.uid == resource.data.userId && 
+                     request.auth.uid == request.resource.data.userId;
+      
+      // Permitir eliminación si el usuario está autenticado y es el propietario
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    
+    // Reglas específicas para la colección 'trips'
+    match /trips/{tripId} {
+      // Permitir lectura si el usuario está autenticado y es el propietario del viaje
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      
+      // Permitir creación si el usuario está autenticado y establece su ID como propietario
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      
+      // Permitir actualización si el usuario está autenticado, es el propietario y no cambia el propietario
+      allow update: if request.auth != null && 
+                     request.auth.uid == resource.data.userId && 
+                     request.auth.uid == request.resource.data.userId;
+      
+      // Permitir eliminación si el usuario está autenticado y es el propietario
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+  }
+}
